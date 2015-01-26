@@ -46,7 +46,6 @@ function run() {
           
           if (excludes.indexOf(importPath) === -1) {
             
-            // Alert.show('Will create ' + importPath);
             
             importPath = importPath.match(/\.scss$/) ? importPath : importPath + '.scss';
                     
@@ -63,9 +62,6 @@ function run() {
             }
             
             
-          }
-          else {
-            // Alert.show('will NOT create ' + importPath);
           }
           
         });
