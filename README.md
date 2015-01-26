@@ -2,7 +2,18 @@
 
 Port of [Sass Director](http://sassdirector.com/) by [Una](http://una.github.io/) as a mixin for [Chocolat](https://chocolatapp.com).
 
-Adds `Actions/Sass Director/Create` menu item.
+Adds `Actions/Sass Director/Create` and `Actions/Sass Director/Settings…` menu items. 
+
+
+## Run Sass Director
+Open a main import/manifest file and run **`Actions/Sass Director/Create`** to create the according directory structure and files.
+
+## Exclude import items
+Open the settings window by going to **`Actions/Sass Director/Settings…`**.
+Enter the import paths you do **NOT** want to be created by Sass Director, each on a new line.
+
+![Sass-Director Settings](sass-director-settings.png)
+
 
 
 ---
