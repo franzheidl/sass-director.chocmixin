@@ -1,8 +1,12 @@
+var win;
+
+
 function run() {
   var fs = require('fs');
   var path = require('path');
   
-  var excludes = ['compass'];
+  var settings = getSettings();
+  var excludes = settings.excludes;
   
   function mkdir(path) {
     function create(path) {
@@ -42,8 +46,7 @@ function run() {
           var importPath = importStatement.match(/^[ \t]*@import[ \t]+(['"])(.+?)\1/)[2];
           
           if (excludes.indexOf(importPath) === -1) {
-            
-            
+                        
             importPath = importPath.match(/\.scss$/) ? importPath : importPath + '.scss';
                     
             var importDirectory = baseDirectory + '/' + path.dirname(importPath);
@@ -57,7 +60,6 @@ function run() {
             if (!fs.existsSync(importBasename) && importDirectories.indexOf(importBasename) === -1) {
               importBasenames.push(importBasename);
             }
-            
             
           }
           
@@ -88,10 +90,101 @@ function run() {
 }
 
 
+function getSettings() {
+  var s = Storage.persistent().get('SASS_DIRECTOR_SETTINGS');
+  if (s === null) {
+    return {};
+  }
+  else {
+    return s;
+  }
+}
+
+
+function getUserSettings() {
+  win.applyFunction(function() {
+    var excludesEl = document.getElementById('excludes');
+    var excludes = excludesEl.value.split('\n');
+    // remove whitespace-only and empty items
+    for(i = excludes.length - 1; i >= 0; i--) {
+      excludes[i] = excludes[i].replace(/\s/g,"");
+      if (excludes[i] === "") {
+        excludes.splice(i,1);
+      }
+    }
+    var settings = {excludes: excludes}
+    chocolat.sendMessage('save', settings);
+  }, []);
+}
+
+
+function updateWin() {
+  var settings = getSettings();
+  win.applyFunction(function(settings) {
+    var excludesEl = document.getElementById('excludes');
+    settingsStr = settings.excludes.join('\n');
+    excludesEl.value = settingsStr;
+  }, [settings]);
+}
+
+function saveSettings(s) {
+  Storage.persistent().set('SASS_DIRECTOR_SETTINGS', s);
+}
+
+
+
+function settings() {
+  if (!win || win === undefined) {
+    win = new Window();
+    win.htmlPath = './settings.html';
+    win.title = 'Sass Director Settings';
+    win.buttons = ['Save', 'Cancel'];
+    
+    win.onLoad = function() {
+      updateWin();
+    }
+    
+    win.onUnload = function() {
+      win = undefined;
+    };
+    
+    win.onMessage = function(message) {
+      var arg;
+      if (arguments) {
+        arg = arguments['1'];
+      }
+      if (message === 'save') {
+        saveSettings(arg);
+        win.close();
+      }
+    }
+    
+    win.onButtonClick = function(button) {
+      if (button === 'Save') {
+        getUserSettings();
+      }
+      else if (button === 'Cancel') {
+        win.close();
+      }
+    }
+    
+    win.run();
+  }
+  else {
+    win.show();
+  }
+}
+
+
 
 Hooks.addMenuItem('Actions/Sass Director/Create', '', function() {
   run();
 });
 
+Hooks.addMenuItem('Actions/Sass Director/Settings…', '', function() {
+  settings();
+});
 
-
+// Hooks.addMenuItem('Actions/Sass Director/Debug Settings', '', function() {
+//   Alert.show(JSON.stringify(getSettings()));
+// });
